@@ -1,0 +1,18 @@
+[project]
+name = "projet-10"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "97jayv122",email = "jay-v@live.fr"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "djangorestframework (>=3.16.0,<4.0.0)",
+    "djangorestframework-simplejwt (>=5.5.0,<6.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

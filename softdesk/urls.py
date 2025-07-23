@@ -21,11 +21,14 @@ from rest_framework import routers
 
 
 from .project import views
+from .users.views import UserViewSet
 
 router = routers.SimpleRouter()
 router.register(r'project', views.ProjectViewSet, basename='project')
 router.register(r'issue', views.IssueViewSet, basename='issue')
 router.register(r'comment', views.CommentViewSet, basename='comment')
+router.register(r'user', UserViewSet, basename='user')
+router.register(r'contributor', views.ContributorViewSet, basename='contributor')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
