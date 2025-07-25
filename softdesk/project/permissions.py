@@ -3,9 +3,17 @@ from rest_framework import permissions
 
 class IsContributorOrAuthor(permissions.BasePermission):
      
+    def get_project_from_obj(self, obj):
+        """Déduit le projet à partir de l'objet"""
+        if hasattr(obj, 'project'):
+            return obj.project
+        elif hasattr(obj, 'issue') and hasattr(obj.issue, 'project'):
+            return obj.issue.project
+        return None
+    
     def has_object_permission(self, request, view, obj):
         user = request.user
-        project = getattr(obj, 'project', None)
+        project = self.get_project_from_obj(obj)
         if not project:
             return False
         is_contributor = project.contributors.filter(user=user).exists()

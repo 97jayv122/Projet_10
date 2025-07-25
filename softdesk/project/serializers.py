@@ -24,11 +24,11 @@ class ContributorSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
 
-    issue = serializers.HyperlinkedRelatedField(
-        many=False,
-        read_only=True,
-        view_name='issue-detail'
-    )
+    # issue = serializers.HyperlinkedRelatedField(
+    #     many=False,
+    #     read_only=True,
+    #     view_name='issue-detail'
+    # )
     author = serializers.ReadOnlyField(source='author.username')
 
     class Meta:
