@@ -4,25 +4,36 @@ from .models import Project, Issue, Comment, Contributor
 from .permissions import IsContributorOrAuthor, IsAuthorOrReadOnly
 from .serializers import (
     ProjectSerializer,
-    # ProjectDetailSerializer,
+    ProjectDetailSerializer,
     IssueSerializer,
-    # IssueDetailSerializer,
+    IssueDetailSerializer,
     CommentSerializer,
     # CommentDetailSerializer
     ContributorSerializer
 )
 
+class MultipleSerializerMixin:
 
-class ProjectViewSet(viewsets.ModelViewSet):
+    detail_serializer_class = None
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve' and self.detail_serializer_class is not None:
+            return self.detail_serializer_class
+        return super().get_serializer_class()
+
+
+
+class ProjectViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows project to be viewed or edited
     """
 
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    detail_serializer_class = ProjectDetailSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsAuthorOrReadOnly,
+        IsAuthorOrReadOnly,   
         ]
 
     def perform_create(self, serializer):
@@ -30,15 +41,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
         Contributor.objects.create(user=self.request.user, project=project)
 
 
-
-
-class IssueViewSet(viewsets.ModelViewSet):
+class IssueViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows issue to be viewed or edited
     """
 
     queryset = Issue.objects.all()
     serializer_class = IssueSerializer
+    detail_serializer_class = IssueDetailSerializer
     permission_classes = [
         permissions.IsAuthenticated,
         IsContributorOrAuthor

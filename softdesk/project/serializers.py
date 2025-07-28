@@ -66,20 +66,67 @@ class IssueSerializer(serializers.ModelSerializer):
         ]
 
     
-    # def get_valid_assignees_queryset(self):
-    #     project_id = self.initial_data.get('project')
-    #     return User.objects.filter(contribution__project_id=project_id)
+    def get_valid_assignees_queryset(self):
+        project_id = self.initial_data.get('project')
+        return User.objects.filter(contribution__project_id=project_id)
+    
+    def validate_project(self, value):
+        project = Project.objects.filter(name=value)
+        if not project.exists():
+            raise serializers.ValidationError("Le projet n'existe pas")
+        return value
 
     def validate(self, data):
         assignee = data.get('assignee')
+        user = data.get('author')
         if assignee and not Contributor.objects.filter(user=assignee, project_id=data['project'].id).exists():
             raise serializers.ValidationError("L'assigne doit être contributeur du projet.")
+        if not Contributor.objects.filter(user=user, project_id=data['project'].id).exists():
+            raise serializers.ValidationError("Vous n'êtes pas contributeur de ce projet")
         return data
+    
+
+class IssueDetailSerializer(serializers.ModelSerializer):
+
+    author = serializers.ReadOnlyField(source='author.username')
+    comments = CommentSerializer(many=True, read_only=True)
+    class Meta:
+        model = Issue
+        fields = [
+            'id',
+            'author',
+            'assignee',
+            'created_time',
+            'name',
+            'tag',
+            'status',
+            'priority',
+            'description',
+            'project',
+            'comments',
+        ]
     
 class ProjectSerializer(serializers.ModelSerializer):
 
     author = serializers.ReadOnlyField(source='author.username')
+
+    class Meta:
+        model = Project
+        fields = [
+            'id',
+            'author',
+            'created_time',
+            'name',
+            'type',
+            'description',
+            ]
+
+
+class ProjectDetailSerializer(serializers.ModelSerializer):
+
+    author = serializers.ReadOnlyField(source='author.username')
     contributor = ContributorSerializer(many=True, read_only=True)
+    issues = IssueSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
@@ -91,20 +138,5 @@ class ProjectSerializer(serializers.ModelSerializer):
             'type',
             'description',
             'contributor',
-            ]
-
-
-class ProjectDetailSerializer(serializers.ModelSerializer):
-
-    author = serializers.ReadOnlyField(source='author.username')
-
-    class Meta:
-        model = Project
-        fields = [
-            'id',
-            'author'
-            'created_time',
-            'name',
-            'description',
-            'code',
+            'issues',
             ]
