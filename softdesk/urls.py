@@ -28,23 +28,46 @@ from .users.views import UserViewSet
 router = routers.DefaultRouter()
 router.register(r'projects', views.ProjectViewSet, basename='project')
 
-projects_router = routers.NestedSimpleRouter(router, r'projects', lookup='project')
-projects_router.register(r'issues', views.IssueViewSet, basename='project-issues')
+projects_router = routers.NestedSimpleRouter(
+    router,
+    r'projects',
+    lookup='project'
+    )
+projects_router.register(
+    r'issues',
+    views.IssueViewSet,
+    basename='project-issues'
+    )
 
-issues_router = routers.NestedSimpleRouter(projects_router, r'issues', lookup='issue')
+issues_router = routers.NestedSimpleRouter(
+    projects_router,
+    r'issues',
+    lookup='issue'
+    )
 issues_router.register(
     r'comments',
     views.CommentViewSet,
     basename='issue-comments'
 )
 router.register(r'user', UserViewSet, basename='user')
-router.register(r'contributor', views.ContributorViewSet, basename='contributor')
+router.register(r'contributor',
+                views.ContributorViewSet,
+                basename='contributor'
+                )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path(
+        'api/token/',
+        TokenObtainPairView.as_view(),
+        name='token_obtain_pair'
+        ),
+    path(
+        'api/token/refresh/',
+        TokenRefreshView.as_view(),
+        name='token_refresh'
+        ),
     path('api/', include(router.urls)),
     path('api/', include(projects_router.urls)),
     path('api/', include(issues_router.urls)),

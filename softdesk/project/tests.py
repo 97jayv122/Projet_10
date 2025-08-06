@@ -109,7 +109,10 @@ class ProjectTests(BaseAPITestCase):
 class IssueTests(BaseAPITestCase):
     def test_list_issues_as_contributor(self):
         self.authenticate(self.token1)
-        url = reverse('project-issues-list', kwargs={'project_pk': self.project.pk})
+        url = reverse(
+            'project-issues-list',
+            kwargs={'project_pk': self.project.pk}
+            )
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         issues = self.get_list(response)
@@ -143,7 +146,10 @@ class IssueTests(BaseAPITestCase):
 
     def test_create_issue_non_contributor(self):
         self.authenticate(self.token2)
-        url = reverse('project-issues-list', kwargs={'project_pk': self.project.pk})
+        url = reverse(
+            'project-issues-list',
+            kwargs={'project_pk': self.project.pk}
+            )
         data = {'name': 'New Issue', 'description': 'Description'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
