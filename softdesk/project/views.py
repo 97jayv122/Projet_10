@@ -1,92 +1,77 @@
-from django.shortcuts import render
+"""
+REST API Views for Projects, Issues, Comments, and Contributor management.
+
+- Projects: list, create (auto-add contributor), retrieve, update/delete (author-only).
+- Issues & Comments: nested under projects; list/create (contributors only), retrieve, update/delete (author-only).
+"""
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions, viewsets
 from .models import Project, Issue, Comment, Contributor
-from .permissions import IsContributorOrAuthor, IsAuthorOrReadOnly
+from .permissions import ProjectPermission
 from .serializers import (
     ProjectSerializer,
     ProjectDetailSerializer,
     IssueSerializer,
     IssueDetailSerializer,
     CommentSerializer,
-    # CommentDetailSerializer
-    ContributorSerializer
+    ContributorSerializer,
 )
 
 class MultipleSerializerMixin:
-
     detail_serializer_class = None
 
     def get_serializer_class(self):
-        if self.action == 'retrieve' and self.detail_serializer_class is not None:
+        if self.action == 'retrieve' and self.detail_serializer_class:
             return self.detail_serializer_class
         return super().get_serializer_class()
 
-
-
 class ProjectViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
-    """
-    API endpoint that allows project to be viewed or edited
-    """
-
-    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     detail_serializer_class = ProjectDetailSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsAuthorOrReadOnly,   
-        ]
+    permission_classes = [permissions.IsAuthenticated, ProjectPermission]
+
+    def get_queryset(self):
+        return Project.objects.all()
 
     def perform_create(self, serializer):
         project = serializer.save(author=self.request.user)
-        Contributor.objects.create(user=self.request.user, project=project)
-
+        Contributor.objects.get_or_create(user=self.request.user, project=project)
 
 class IssueViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
-    """
-    API endpoint that allows issue to be viewed or edited
-    """
-
-    queryset = Issue.objects.all()
     serializer_class = IssueSerializer
     detail_serializer_class = IssueDetailSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsContributorOrAuthor
-        ]
-    def get_queryset(self): 
-        user = self.request.user
-        return Issue.objects.filter(project__contributor__user=user)
+    permission_classes = [permissions.IsAuthenticated, ProjectPermission]
 
+    def get_queryset(self):
+        project_pk = self.kwargs['project_pk']
+        return Issue.objects.filter(project_id=project_pk)
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
+        serializer.save(author=self.request.user, project=project)
 
 class CommentViewSet(viewsets.ModelViewSet):
-
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsContributorOrAuthor
-        ]
-    
+    permission_classes = [permissions.IsAuthenticated, ProjectPermission]
+
     def get_queryset(self):
-        user = self.request.user
-        return Comment.objects.filter(issue__project__contributor__user=user)
+        project_pk = self.kwargs['project_pk']
+        issue_pk = self.kwargs['issue_pk']
+        return Comment.objects.filter(issue__project_id=project_pk, issue_id=issue_pk)
 
-    
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
+        issue = get_object_or_404(
+            Issue.objects.filter(project_id=self.kwargs['project_pk']),
+            pk=self.kwargs['issue_pk']
+        )
+        serializer.save(author=self.request.user, issue=issue)
 
 class ContributorViewSet(viewsets.ModelViewSet):
-    queryset = Contributor.objects.all()
     serializer_class = ContributorSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
-    
+        return Contributor.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-        

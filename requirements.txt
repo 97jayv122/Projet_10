@@ -1,0 +1,4 @@
+djangorestframework
+djangorestframework-simplejwt
+drf-nested-routers
+
