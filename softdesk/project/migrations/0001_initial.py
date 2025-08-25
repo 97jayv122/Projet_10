@@ -9,45 +9,121 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Issue',
+            name="Issue",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('description', models.TextField()),
-                ('priority', models.CharField(choices=[('LOW', 'Low'), ('MEDIUM', 'Medium'), ('HIGH', 'High')], max_length=6)),
-                ('tag', models.CharField(choices=[('BUG', 'Bug'), ('FEATURE', 'Feature'), ('TASK', 'Task')], max_length=10)),
-                ('status', models.CharField(choices=[('TODO', 'To Do'), ('IN_PROGRESS', 'In Progress'), ('FINISHED', 'Finished')], default='TODO', max_length=12)),
-                ('created_time', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("description", models.TextField()),
+                (
+                    "priority",
+                    models.CharField(
+                        choices=[
+                            ("LOW", "Low"),
+                            ("MEDIUM", "Medium"),
+                            ("HIGH", "High"),
+                        ],
+                        max_length=6,
+                    ),
+                ),
+                (
+                    "tag",
+                    models.CharField(
+                        choices=[
+                            ("BUG", "Bug"),
+                            ("FEATURE", "Feature"),
+                            ("TASK", "Task"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("TODO", "To Do"),
+                            ("IN_PROGRESS", "In Progress"),
+                            ("FINISHED", "Finished"),
+                        ],
+                        default="TODO",
+                        max_length=12,
+                    ),
+                ),
+                ("created_time", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Project',
+            name="Project",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=255)),
-                ('description', models.TextField()),
-                ('code', models.TextField()),
-                ('type', models.CharField(choices=[('FRONTEND', 'Front-end'), ('BACK_END', 'Back-end'), ('IOS', 'iOS'), ('ANDROID', 'Android')], max_length=10)),
-                ('created_time', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("description", models.TextField()),
+                ("code", models.TextField()),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("FRONTEND", "Front-end"),
+                            ("BACK_END", "Back-end"),
+                            ("IOS", "iOS"),
+                            ("ANDROID", "Android"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                ("created_time", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Comment',
+            name="Comment",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('description', models.TextField()),
-                ('created_time', models.DateTimeField(auto_now=True)),
-                ('issue', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='project.issue')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("description", models.TextField()),
+                ("created_time", models.DateTimeField(auto_now=True)),
+                (
+                    "issue",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="comments",
+                        to="project.issue",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='issue',
-            name='project',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='issues', to='project.project'),
+            model_name="issue",
+            name="project",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="issues",
+                to="project.project",
+            ),
         ),
     ]

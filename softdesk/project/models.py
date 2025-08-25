@@ -9,6 +9,7 @@ Data models for Projects, Issues, Comments, and Contributors.
 - Comment: feedback or discussion entry on an Issue, with UUID primary key,
   description, timestamp, and author.
 """
+
 import uuid
 from django.db import models
 from softdesk.users.models import User
@@ -17,7 +18,6 @@ from softdesk.users.models import User
 class Project(models.Model):
     """
     A project entity that groups issues and contributors.
-
     Attributes:
     - name: the project title.
     - description: detailed information about the project.
@@ -25,11 +25,12 @@ class Project(models.Model):
     - created_time: timestamp when the project was created.
     - author: the User who created the project.
     """
+
     TYPE_CHOICE = [
-    ('FRONTEND', 'Front-end'),
-    ('BACK_END', 'Back-end'),
-    ('IOS', 'iOS'),
-    ('ANDROID', 'Android'),
+        ("FRONTEND", "Front-end"),
+        ("BACK_END", "Back-end"),
+        ("IOS", "iOS"),
+        ("ANDROID", "Android"),
     ]
 
     name = models.CharField(max_length=255)
@@ -37,14 +38,13 @@ class Project(models.Model):
     type = models.CharField(max_length=10, choices=TYPE_CHOICE)
     created_time = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='owned_projects'
-        )
+        User, on_delete=models.CASCADE, related_name="owned_projects"
+    )
 
     def __str__(self):
         """String representation of the Project."""
         return self.name
+
 
 class Issue(models.Model):
     """
@@ -61,47 +61,41 @@ class Issue(models.Model):
     - author: creator of the issue.
     - assignee: optional User assigned to resolve the issue.
     """
-    TAG_CHOICES = [('BUG','Bug'),('FEATURE','Feature'),('TASK','Task')]
-    PRIORITY_CHOICES = [
-        ('LOW','Low'),
-        ('MEDIUM','Medium'),
-        ('HIGH','High')
-        ]
-    STATUS_CHOICES = [
-        ('TODO','To Do'),
-        ('IN_PROGRESS','In Progress'),
-        ('FINISHED','Finished')
-        ]
 
-    project = models.ForeignKey(Project,
-                                on_delete=models.CASCADE,
-                                related_name='issues')
+    TAG_CHOICES = [("BUG", "Bug"), ("FEATURE", "Feature"), ("TASK", "Task")]
+    PRIORITY_CHOICES = [("LOW", "Low"), ("MEDIUM", "Medium"), ("HIGH", "High")]
+    STATUS_CHOICES = [
+        ("TODO", "To Do"),
+        ("IN_PROGRESS", "In Progress"),
+        ("FINISHED", "Finished"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="issues"
+    )
     name = models.CharField(max_length=255)
     description = models.TextField()
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES)
     tag = models.CharField(max_length=10, choices=TAG_CHOICES)
     status = models.CharField(
-        max_length=12,
-        choices=STATUS_CHOICES,
-        default='TODO'
-        )
+        max_length=12, choices=STATUS_CHOICES, default="TODO"
+    )
     created_time = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='owner_issue'
-        )
+        User, on_delete=models.CASCADE, related_name="owner_issue"
+    )
     assignee = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name='assigned_issues'
-        )
+        null=True,
+        blank=True,
+        related_name="assigned_issues",
+    )
 
     def __str__(self):
         """String representation of the Issue."""
         return self.name
-    
+
 
 class Contributor(models.Model):
     """
@@ -109,23 +103,20 @@ class Contributor(models.Model):
 
     Enforces a unique (user, project) pairing.
     """
+
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='contribution'
-        )
+        User, on_delete=models.CASCADE, related_name="contribution"
+    )
     project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-        related_name='contributors'
-        )
+        Project, on_delete=models.CASCADE, related_name="contributors"
+    )
 
     class Meta:
-        unique_together = ('user', 'project')
+        unique_together = ("user", "project")
 
     def __str__(self):
         """String representation of the Contributor."""
-        return f'{self.user.username} -> {self.project.name}'
+        return f"{self.user.username} -> {self.project.name}"
 
 
 class Comment(models.Model):
@@ -139,24 +130,17 @@ class Comment(models.Model):
     - created_time: timestamp when the comment was created.
     - author: the User who authored the comment.
     """
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-        )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     description = models.TextField(blank=False)
     issue = models.ForeignKey(
-        Issue,
-        on_delete=models.CASCADE,
-        related_name='comments'
-        )
-    created_time =  models.DateTimeField(auto_now_add=True)
+        Issue, on_delete=models.CASCADE, related_name="comments"
+    )
+    created_time = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='owner_comment'
-        )
+        User, on_delete=models.CASCADE, related_name="owner_comment"
+    )
 
     def __str__(self):
         """String representation of the Comment."""
-        return f'Comment by {self.author.username} on {self.issue.name}'
+        return f"Comment by {self.author.username} on {self.issue.name}"

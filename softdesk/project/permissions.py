@@ -11,13 +11,16 @@ Permissions for Project, Issue, Comment, and nested routes.
   * GET detail: only project contributors.
   * PATCH/DELETE: only author of the nested object.
 """
+
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from .models import Project
 
+
 class ProjectPermission(permissions.BasePermission):
     """
-    Unified permission for root (projects) and nested routes (issues, comments):
+    Unified permission for root (projects)
+    and nested routes (issues, comments):
     - Projects root:
       * GET list & POST create: any authenticated user.
       * GET detail: only project contributors.
@@ -37,15 +40,16 @@ class ProjectPermission(permissions.BasePermission):
         user = request.user
         if not user or not user.is_authenticated:
             return False
-        project_pk = view.kwargs.get('project_pk')
+        project_pk = view.kwargs.get("project_pk")
         if project_pk is None:
-            # Root projects route
             return True
-        # Nested routes (issues/comments)
-        if request.method in permissions.SAFE_METHODS or request.method == 'POST':
+
+        if (
+            request.method in permissions.SAFE_METHODS
+            or request.method == "POST"
+        ):
             return Project.objects.filter(
-                pk=project_pk,
-                contributors__user=user
+                pk=project_pk, contributors__user=user
             ).exists()
         return True
 
@@ -53,14 +57,14 @@ class ProjectPermission(permissions.BasePermission):
         """
         Retrieve Project instance from URL kwargs or object attribute.
         """
-        project_pk = view.kwargs.get('project_pk')
+        project_pk = view.kwargs.get("project_pk")
         if project_pk:
             return get_object_or_404(Project, pk=project_pk)
         if isinstance(obj, Project):
             return obj
-        if hasattr(obj, 'project'):
+        if hasattr(obj, "project"):
             return obj.project
-        if hasattr(obj, 'issue') and hasattr(obj.issue, 'project'):
+        if hasattr(obj, "issue") and hasattr(obj.issue, "project"):
             return obj.issue.project
         return None
 
@@ -76,4 +80,4 @@ class ProjectPermission(permissions.BasePermission):
             return False
         if request.method in permissions.SAFE_METHODS:
             return project.contributors.filter(user=user).exists()
-        return hasattr(obj, 'author') and obj.author == user
+        return hasattr(obj, "author") and obj.author == user
