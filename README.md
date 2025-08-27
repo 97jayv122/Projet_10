@@ -7,7 +7,7 @@ SoftDesk is a collaborative RESTful API designed for managing projects, issues, 
 ### Authentication
 
 * JWT-based authentication using `djangorestframework-simplejwt`.
-* All endpoints require a valid access token.
+* All endpoints (except user registration) require a valid access token.
 
 ### Projects
 
@@ -60,33 +60,63 @@ SoftDesk is a collaborative RESTful API designed for managing projects, issues, 
    ```
 
 ## API Endpoints
+1. Register a user via `POST /api/user/`.
+
+2. Obtain token via `POST /api/token/` with your username/password.
+
+3. Use the token in all protected requests:
+
+   ```bash
+   Authorization: Bearer <access_token>
+   ```
+
+4. Refresh tokens via `POST /api/token/refresh/`.
+Note: The custom User model requires an age field. If you create a superuser, remember to set age (e.g., via the admin site).
+
+## API Endpoints
 
 Authentication:
 
 * **Obtain Token**: `POST /api/token/`
 * **Refresh Token**: `POST /api/token/refresh/`
 
+Users:
+Register (open): POST /api/user/
+Returns 201 Created with the new user (password is write-only).
+
+* List me: GET /api/user/
+Returns a list with a single item: the authenticated user.
+
+* Retrieve me: GET /api/user/{id}/
+Only if {id} is your own id; otherwise 404.
+
+* Update me: PUT /api/user/{id}/, PATCH /api/user/{id}/
+Password updates are hashed automatically if provided.
+
+* Delete me: DELETE /api/user/{id}/
+Performs a soft delete (anonymizes username, clears email, disables login).
+
 Projects:
 
 * `GET /api/projects/` : List all projects
-* `POST /api/projects/` : Create a new project
-* `GET /api/projects/{project_id}/` : Retrieve project details
+* `POST /api/projects/` : Create a new project(creator becomes contributor)
+* `GET /api/projects/{project_id}/` : Retrieve project details(contributors only)
 * `PATCH /api/projects/{project_id}/` : Update project (author only)
 * `DELETE /api/projects/{project_id}/` : Delete project (author only)
 
 Issues:
 
-* `GET /api/projects/{project_id}/issues/` : List issues for a project
-* `POST /api/projects/{project_id}/issues/` : Create a new issue
-* `GET /api/projects/{project_id}/issues/{issue_id}/` : Retrieve issue details
+* `GET /api/projects/{project_id}/issues/` : List issues for a project(contributors only)
+* `POST /api/projects/{project_id}/issues/` : Create a new issue(contributors only)
+* `GET /api/projects/{project_id}/issues/{issue_id}/` : Retrieve issue details(contributors only)
 * `PATCH /api/projects/{project_id}/issues/{issue_id}/` : Update issue (author only)
 * `DELETE /api/projects/{project_id}/issues/{issue_id}/` : Delete issue (author only)
 
 Comments:
 
-* `GET /api/projects/{project_id}/issues/{issue_id}/comments/` : List comments for an issue
-* `POST /api/projects/{project_id}/issues/{issue_id}/comments/` : Create a new comment
-* `GET /api/projects/{project_id}/issues/{issue_id}/comments/{comment_id}/` : Retrieve comment details
+* `GET /api/projects/{project_id}/issues/{issue_id}/comments/` : List comments for an issue(contributors only)
+* `POST /api/projects/{project_id}/issues/{issue_id}/comments/` : Create a new comment(contributors only)
+* `GET /api/projects/{project_id}/issues/{issue_id}/comments/{comment_id}/` : Retrieve comment details(contributors only)
 * `PATCH /api/projects/{project_id}/issues/{issue_id}/comments/{comment_id}/` : Update comment (author only)
 * `DELETE /api/projects/{project_id}/issues/{issue_id}/comments/{comment_id}/` : Delete comment (author only)
 
