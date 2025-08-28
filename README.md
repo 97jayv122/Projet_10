@@ -81,19 +81,19 @@ Authentication:
 * **Refresh Token**: `POST /api/token/refresh/`
 
 Users:
-Register (open): POST /api/user/
+Register (open): `POST /api/user/`
 Returns 201 Created with the new user (password is write-only).
 
-* List me: GET /api/user/
+* List me: `GET /api/user/`
 Returns a list with a single item: the authenticated user.
 
-* Retrieve me: GET /api/user/{id}/
+* Retrieve me: `GET /api/user/{id}/`
 Only if {id} is your own id; otherwise 404.
 
-* Update me: PUT /api/user/{id}/, PATCH /api/user/{id}/
+* Update me: `PUT /api/user/{id}/`, `PATCH /api/user/{id}/`
 Password updates are hashed automatically if provided.
 
-* Delete me: DELETE /api/user/{id}/
+* Delete me: `DELETE /api/user/{id}/`
 Performs a soft delete (anonymizes username, clears email, disables login).
 
 Projects:
